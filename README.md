@@ -11,6 +11,10 @@ This repository contains the official toolkit to help participants start develop
 
 ---
 
+## Notes for the team
+
+Use https://playcanvas.com/model-viewer to view the mesh(.glb files in aic_asset)
+
 ## Toolkit Guide
 
 Welcome to the AIC toolkit documentation. This guide walks you through the complete workflow for participating in the challenge — from understanding the requirements to submitting your solution.
