@@ -1,0 +1,101 @@
+[workspace]
+name = "aic"
+authors = ["Teo Koon Peng <koonpeng@intrinsic.ai>"]
+channels = ["robostack-kilted", "conda-forge", "pytorch", "nvidia"]
+platforms = ["linux-64"]
+version = "0.1.0"
+conda-pypi-map = { "robostack-kilted" = "robostack_mapping.json" }
+preview = ["pixi-build"]
+
+[system-requirements]
+cuda = "13.0"
+
+[target.linux-64.dependencies]
+evdev = ">=1.9.2,<2"
+
+[dependencies]
+isort = "==5.13.2"                                                                     # version bundled by the vscode extension
+json5 = ">=0.13.0,<0.14"                                                               # version bundled by the vscode extension
+numpy = "<2.3.0"
+packaging = ">=24.2,<26.0"                                                             # required by lerobot==0.4.3
+pyright = "==1.1.408"
+ros-kilted-aic-control-interfaces = { path = "aic_interfaces/aic_control_interfaces" }
+ros-kilted-aic-example-policies = { path = "aic_example_policies" }
+ros-kilted-aic-model = { path = "aic_model" }
+ros-kilted-aic-model-interfaces = { path = "aic_interfaces/aic_model_interfaces" }
+ros-kilted-aic-task-interfaces = { path = "aic_interfaces/aic_task_interfaces" }
+ros-kilted-aic-teleoperation = { path = "aic_utils/aic_teleoperation" }
+ros-kilted-aic-training-interfaces = { path = "aic_utils/aic_training_interfaces" }
+ros-kilted-control-msgs = "*"                                                          # lerobot_robot_ros
+ros-kilted-geometry-msgs = "*"                                                         # lerobot_robot_ros
+ros-kilted-lerobot-robot-aic = { path = "aic_utils/lerobot_robot_aic" }
+ros-kilted-moveit-msgs = "*"                                                           # lerobot_robot_ros
+ros-kilted-rclpy = "*"
+ros-kilted-rmw-zenoh-cpp = "*"
+ros-kilted-ros-core = "*"
+ros-kilted-sensor-msgs = "*"                                                           # lerobot_robot_ros
+ros-kilted-std-msgs = "*"                                                              # lerobot_robot_ros
+ros-kilted-std-srvs = "*"
+ros-kilted-tf2-ros-py = "*"
+ros-kilted-my-policy-node = { path = "my_policy_node" }
+setuptools = ">=71.0.0,<81.0.0"                                                        # required by lerobot==0.4.3
+ros-kilted-ros2bag = ">=0.32.0,<0.33"
+ros-kilted-rosbag2-storage-mcap = ">=0.32.0,<0.33"
+ros-kilted-rosbag2-transport = ">=0.32.0,<0.33"
+cuda-version = "12.8.*"
+cuda-nvcc = ">=12.8.93,<13"
+cuda-libraries-dev = ">=12.8.2,<13"
+libboost-devel = ">=1.88.0,<2"
+eigen = ">=5.0.1,<6"
+
+
+[pypi-dependencies]
+huggingface-hub = { version = "~=1.7" }
+lerobot = "==0.5.1"
+lerobot_robot_ros = { git = "https://github.com/koonpeng/lerobot-ros", rev = "87708d0ae14a724bca78f8ae9d55448332509a57", subdirectory = "lerobot_robot_ros" }
+lerobot_teleoperator_devices = { git = "https://github.com/koonpeng/lerobot-ros", rev = "87708d0ae14a724bca78f8ae9d55448332509a57", subdirectory = "lerobot_teleoperator_devices" }
+mujoco = "==3.5.0"
+pynput = ">=1.7.6,<2"
+pyspacemouse = ">=2.0.0, <3"
+torch = ">=2.10.0, <3"
+torchvision = ">=0.25.0, <0.26"
+torchaudio = ">=2.11.0, <3"
+scipy = ">=1.17.1, <2"
+joblib = ">=1.5.3, <2"
+scikit-learn = ">=1.8.0, <2"
+scikit-image = ">=0.26.0, <0.27"
+pandas = ">=3.0.3, <4"
+h5py = ">=3.16.0, <4"
+numba = ">=0.65.1, <0.66"
+rtree = ">=1.4.1, <2"
+pyyaml = "*"
+ruamel-yaml = ">=0.19.1, <0.20"
+omegaconf = ">=2.3.0, <3"
+trimesh = ">=4.12.2, <5"
+meshcat = ">=0.3.2, <0.4"
+einops = ">=0.8.2, <0.9"
+kornia = ">=0.8.3, <0.9"
+wandb = ">=0.24.2, <0.25"
+imgaug = ">=0.4.0, <0.5"
+ninja = ">=1.13.0, <2"
+videoio = ">=0.3.0, <0.4"
+timm = ">=1.0.27, <2"
+albumentations = ">=2.0.8, <3"
+pycocotools = ">=2.0.11, <3"
+webdataset = ">=1.0.2, <2"
+transformations = ">=2026.1.18, <2027"
+roma = ">=1.5.6, <2"
+seaborn = ">=0.13.2, <0.14"
+openpyxl = ">=3.1.5, <4"
+xlsxwriter = ">=3.2.9, <4"
+pypng = ">=0.20220715.0, <0.20220716"
+imageio = ">=2.37.3, <3"
+pip = ">=26.1.1, <27"
+opencv-contrib-python = ">=4.13.0.92, <5"
+warp-lang = ">=1.13.0, <2"
+hydra-core = ">=1.3.2, <2"
+iopath = ">=0.1.10, <0.2"
+tqdm = ">=4.68.1, <5"
+
+[activation]
+scripts = ["pixi_env_setup.sh"]
