@@ -1,4 +1,4 @@
-# AIC with RGBD
+# Implementation of FoundationPose and SAM2 on AIC 
 
 This repository contains an autonomous robotic insertion system developed based on the [**AI for Industry Challenge**](https://github.com/intrinsic-dev/aic) hosted by Intrinsic and Open Robotics.
 
@@ -71,5 +71,3 @@ aic/
 
 This project is licensed under the Apache License 2.0 - see the individual package files for details.
 
-
-# Autonomous Cable Insertion via 6D Visual Servoing
