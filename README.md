@@ -5,7 +5,7 @@ This project is an application utilizing  [**AI for Industry Challenge toolkit**
 The aim of the project is to conduct (some cool name like vision based insersion task?)(in industrial setting, inserting a SFP module into a port of a NIC card).
 We utilise SAM2 and FoundationPose to achive XXX?, Maybe also mentioning AWS remote cloud computing?
 (an demonstration video)
-[](assets/video_with_gz.gif) 
+![demo video](assets/video_with_gz.gif) 
 
 
 
