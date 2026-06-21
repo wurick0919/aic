@@ -9,7 +9,7 @@ The objective of this project is to perform the task of **dynamically tracking a
 
 
 
-## Architechture
+## Architecture
 This project is based on the aformentioned [AIC toolkit](https://github.com/intrinsic-dev/aic), in which the simulation environment, control pipeline and some example control strategies are provided.
 
 We modified the default Gazebo simulation environment to expose raw depth maps, allowing us to collapse the system down from three standard cameras to a **single Eye-in-Hand RGB-D sensor**.
@@ -38,11 +38,11 @@ Then we implement SAM2 and FoundationPose to generate high quality 6D pose estim
 
 
 ### Setup
-This project shares a similar environment setup with AIC toolkit, using [pixi](pixi.toml) to manage dependancies, and distrobox for simulation env, where gazebo is run.
+This project shares a similar environment setup with AIC toolkit, using [pixi](pixi.toml) to manage dependencies, and distrobox for simulation env, where gazebo is run.
 
-The dependencies of SAM2 and FoundationPose are also added into [pixi dependencies](pixi.toml), but some inidividuale packages needs to be manually installed inside pixi environemnt.
+The dependencies of SAM2 and FoundationPose are also added into [pixi dependencies](pixi.toml), but some inidividual packages needs to be manually installed inside pixi environemnt.
 
-Refer to [geting start](https://github.com/intrinsic-dev/aic/blob/main/docs/getting_started.md) from aic toolkit for docker, pixi, distrobox and Nvidia container toolkit.
+Refer to [getting start](https://github.com/intrinsic-dev/aic/blob/main/docs/getting_started.md) from aic toolkit for docker, pixi, distrobox and Nvidia container toolkit.
 
 After set up, inside pixi environment, install dependencies for SAM2 and FoundationPose:
 ```bash
@@ -92,7 +92,7 @@ The core workflow and logic are contained within the following package structure
 aic/
 ├── my_policy_node/my_policy_node   # Primary ROS 2 package
 |   ├── aic_model_depth.py          # Main ROS 2 executable node
-|   └── MyFoundationPosePolicy.py   # MyFoundationPosePolicy execution script
+|   └── MyFoundationPosePolicy.py   # Vision tracking & policy execution script
 └── aic_*                           # Packages from aic toolkit
             
             
