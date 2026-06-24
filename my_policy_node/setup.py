@@ -25,7 +25,6 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            "aic_model_debug = my_policy_node.aic_model_debug:main",
             "aic_model_depth = my_policy_node.aic_model_depth:main",
         ],
     },
