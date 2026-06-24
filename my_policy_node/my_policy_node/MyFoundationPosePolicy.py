@@ -85,7 +85,7 @@ class MyFoundationPosePolicy(Policy):
         import datareader
         
 
-        # Define paths manually (replace with your chosen socket/plug .obj model path)
+        # Define paths manually
         mesh_file = "/home/ubuntu/ws_aic/src/aic/aic_assets/models/NIC Card/nic_card_visual.glb"
         self.est_refine_iter = 4
         self.track_refine_iter = 2
@@ -125,8 +125,6 @@ class MyFoundationPosePolicy(Policy):
 
 
         checkpoint = "./sam2_source/checkpoints/sam2.1_hiera_large.pt"
-        # current_dir = os.path.dirname(os.path.abspath(__file__))
-        # checkpoint = os.path.join(current_dir, "sam2_source/checkpoints/sam2.1_hiera_large.pt")
         model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
         self.predictor = SAM2ImagePredictor(build_sam2(model_cfg, checkpoint))
         self.get_logger().info("SAM2 initialized.")
@@ -320,6 +318,9 @@ class MyFoundationPosePolicy(Policy):
         cv2.waitKey(30)
 
     def get_center_camera_rgbd(self, get_observation):
+        """
+        Get both rgb and depth image from actual aic node, transform into cv2
+        """
         observation, depth_msg = get_observation()
         if observation is None or depth_msg is None:
             self.get_logger().error("Could not find observation or depth")
@@ -334,9 +335,8 @@ class MyFoundationPosePolicy(Policy):
 
     def get_port_transform_in_base_frame(self, T_camera_card: np.ndarray) -> Transform:
         """
-        Transforms the NIC card pose from the Camera Frame into the Robot Base Link Frame,
-        applies the hardcoded static offset to locate the port, and outputs a native
-        ROS Transform message.
+        Transforms the NIC card pose from the Camera Frame into the Robot Base Link Frame.
+        We use the averaged difference between NIC card and port pose to statically trasnform the frame.
         
         Input:  T_camera_card -> (4,4) numpy array tracking matrix from FoundationPose
         Output: Transform     -> ROS 2 Geometry Transform relative to 'base_link'
@@ -344,26 +344,22 @@ class MyFoundationPosePolicy(Policy):
         camera_frame = "center_camera/optical"
         base_frame = "base_link"
         
-        # 1. Look up the live position of the camera relative to the robot base link
         try:
             camera_tf_stamped = self._parent_node._tf_buffer.lookup_transform(
                 base_frame,
                 camera_frame,
-                Time() # Fetches the absolute latest coordinate frame available
+                Time()
             )
         except TransformException as ex:
             self.get_logger().error(f"Could not look up camera frame '{camera_frame}' relative to '{base_frame}': {ex}")
             return None
 
-        # 2. Build the 4x4 homogeneous transformation matrix for the Camera (T_base_camera)
         T_base_camera = np.eye(4)
         
-        # Pack translation coordinates
         T_base_camera[0, 3] = camera_tf_stamped.transform.translation.x
         T_base_camera[1, 3] = camera_tf_stamped.transform.translation.y
         T_base_camera[2, 3] = camera_tf_stamped.transform.translation.z
         
-        # Convert ROS Quaternion to 3x3 Rotation Matrix
         q_cam = [
             camera_tf_stamped.transform.rotation.x,
             camera_tf_stamped.transform.rotation.y,
@@ -372,34 +368,23 @@ class MyFoundationPosePolicy(Policy):
         ]
         T_base_camera[:3, :3] = R.from_quat(q_cam).as_matrix()
 
-        # 3. Compute the Vision Matrix Chain (Card relative to Robot Base)
         T_base_card = T_base_camera @ T_camera_card
 
-        # =========================================================================
-        # 4. Apply the Hardcoded Static Transform Offset (Card to Port)
-        # =========================================================================
         T_card_port = np.eye(4)
         
-        # Averaged translation values found from your live diagnostic stream
         T_card_port[:3, 3] = [0.01230, -0.03510, 0.00600] 
         
-        # Averaged quaternion values [X, Y, Z, W] found from your live diagnostic stream
         averaged_quat = [0.71400, 0.00400, -0.01300, -0.70000]
         T_card_port[:3, :3] = R.from_quat(averaged_quat).as_matrix()
         
-        # Compute final absolute position of the port relative to the robot base link
         T_base_port = T_base_card @ T_card_port
-        # =========================================================================
 
-        # 5. Pack the resulting 4x4 matrix into a clean ROS 2 Transform Message
         port_transform = Transform()
         
-        # Set translation fields (.translation.x, .y, .z)
         port_transform.translation.x = float(T_base_port[0, 3])
         port_transform.translation.y = float(T_base_port[1, 3])
         port_transform.translation.z = float(T_base_port[2, 3])
         
-        # Convert the 3x3 rotation matrix back into a spatial Quaternion (.rotation.x, .y, .z, .w)
         q_port_output = R.from_matrix(T_base_port[:3, :3]).as_quat()
         port_transform.rotation.x = float(q_port_output[0])
         port_transform.rotation.y = float(q_port_output[1])
@@ -424,8 +409,6 @@ class MyFoundationPosePolicy(Policy):
         port_frame = f"task_board/{task.target_module_name}/{task.port_name}_link"
         cable_tip_frame = f"{task.cable_name}/{task.plug_name}_link"
 
-        # Wait for both the port and cable tip TFs to become available.
-        # These come via ground_truth and may not be immediate.
         for frame in [port_frame, cable_tip_frame]:
             if not self._wait_for_tf("base_link", frame):
                 return False
@@ -443,8 +426,7 @@ class MyFoundationPosePolicy(Policy):
 
         z_offset = 0.2
 
-        # Over five seconds, smoothly interpolate from the current position to
-        # a position above the port.
+
         for t in range(0, 50):
             interp_fraction = t / 50.0
             center_cv_image, depth_image, K_matrix = self.get_center_camera_rgbd(get_observation)
@@ -452,8 +434,7 @@ class MyFoundationPosePolicy(Policy):
                 if self.is_first_frame:
                     self.get_logger().info("Frame 0: Localizing target SAM2...")
                     
-                    
-                    # Generate mask with SAM2
+                    # Use SAM2 to get high quality 2D mask of the target
                     with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
                         sam_input_image = cv2.cvtColor(center_cv_image, cv2.COLOR_BGR2RGB)
 
@@ -462,8 +443,7 @@ class MyFoundationPosePolicy(Policy):
 
                         self.predictor.set_image(sam_input_image)
                         
-                        # --- CHOOSE PROMPT METHOD ---
-                        # Example using a hardcoded pixel point [X, Y] for testing:
+                        # Manually set a prompt point
                         input_point = np.array([[592, 507]]) 
                         input_label = np.array([1])
                         
@@ -472,12 +452,11 @@ class MyFoundationPosePolicy(Policy):
                             point_labels=input_label,
                             multimask_output=False
                         )
-                        # masks, _, _ = self.predictor.predict(<input_prompts>)
                     
                     # Extract the 2D mask array (SAM2 shapes it as [1, H, W])
                     final_mask = masks[0].astype(np.uint8)
                     try:
-                        # Register the 6D orientation matrix using the mask
+                        # Register the 6D orientation matrix with FoundationPose using the mask from SAM2
                         with torch.inference_mode(), torch.no_grad():
                             raw_pose = self.est.register(
                                 K=K_matrix, 
@@ -497,7 +476,7 @@ class MyFoundationPosePolicy(Policy):
                         return False
                     
                 else:
-                    # Frame 1 onward: Continuous, high-speed pure RGB visual tracking
+                    # 2nd frame onward, using only FoundationPose to predict the pose
                     with torch.inference_mode(), torch.no_grad():
                         self.current_pose = self.est.track_one(
                             K=K_matrix,
